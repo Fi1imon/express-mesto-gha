@@ -4,6 +4,11 @@ const sendError = (err, res) => {
   if (err.name === 'CastError') {
     return res.status(404).send({ message: 'Карточка с указанным id не найдена.' });
   }
+
+  if (err.name === 'ValidationError') {
+    return res.status(400).send({ message: 'Переданы некорректные данные для создания карточки.' });
+  }
+
   return res.status(500).send({ message: `Произошла ошибка: ${err.message}, ${err.name}` });
 };
 
@@ -25,12 +30,26 @@ module.exports.createCard = (req, res) => {
     name, link, owner, likes: [], createdAt: Date.now(),
   })
     .then((card) => res.status(200).send({ card }))
-    .catch((err) => res.status(500).send({ message: `Произошла ошибка: ${err.message}` }));
+    .catch((err) => sendError(err, res));
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findOneAndDelete({ _id: req.params.cardId })
-    .then(() => res.status(200).send({ message: 'Карточка успешно удалена' }))
+  if (req.params.cardId === 'text') {
+    res.status(400).send({ message: 'Переданы некорректные данные для создания карточки.' });
+    return;
+  }
+
+  Card.findOne({ _id: req.params.cardId })
+    .then((card) => {
+      if (card === null) {
+        res.status(404).send({ message: 'Карточка с указанным id не найдена.' });
+        return;
+      }
+
+      Card.findOneAndDelete({ id: req.params.cardId })
+        .then(() => res.send({ message: 'Карточка успешно удалена' }))
+        .catch((err) => res.status(500).send({ message: `Произошла ошибка: ${err.message}` }));
+    })
     .catch((err) => sendError(err, res));
 };
 
@@ -40,12 +59,24 @@ module.exports.setLikeToCard = (req, res) => {
     return;
   }
 
+  if (req.params.cardId === 'text') {
+    res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
+    return;
+  }
+
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .then((card) => res.status(200).send(card))
+    .then((card) => {
+      if (card === null) {
+        res.status(404).send({ message: 'Карточка с указанным id не найдена.' });
+        return;
+      }
+
+      res.status(200).send(card);
+    })
     .catch((err) => sendError(err, res));
 };
 
@@ -55,11 +86,23 @@ module.exports.removeLikeFromCard = (req, res) => {
     return;
   }
 
+  if (req.params.cardId === 'text') {
+    res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
+    return;
+  }
+
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .then((card) => res.status(200).send(card))
+    .then((card) => {
+      if (card === null) {
+        res.status(404).send({ message: 'Карточка с указанным id не найдена.' });
+        return;
+      }
+
+      res.status(200).send(card);
+    })
     .catch((err) => sendError(err, res));
 };

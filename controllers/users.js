@@ -4,7 +4,12 @@ const sendError = (err, res) => {
   if (err.name === 'CastError') {
     return res.status(404).send({ message: 'Пользователь не найден' });
   }
-  return res.status(500).send({ message: `Произошла ошибка: ${err.message}, ${err.name}` });
+
+  if (err.name === 'ValidationError') {
+    return res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+  }
+
+  return res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
 };
 
 module.exports.getUsers = (req, res) => {
@@ -14,8 +19,19 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUser = (req, res) => {
+  if (req.params.id === 'text') {
+    res.status(400).send({ message: 'Передан некорректный при поиске пользователя.' });
+    return;
+  }
+
   User.findOne({ _id: req.params.id })
-    .then((user) => res.status(200).send(user))
+    .then((user) => {
+      if (user === null) {
+        res.status(404).send({ message: 'Пользователь не найден.' });
+        return;
+      }
+      res.send(user);
+    })
     .catch((err) => sendError(err, res));
 };
 
@@ -29,7 +45,7 @@ module.exports.createUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => res.send({ user }))
-    .catch((err) => res.status(500).send({ message: `Произошла ошибка: ${err.message}` }));
+    .catch((err) => sendError(err, res));
 };
 
 module.exports.updateUser = (req, res) => {
@@ -42,7 +58,7 @@ module.exports.updateUser = (req, res) => {
     return;
   }
 
-  User.findByIdAndUpdate(userId, { name, about }, { new: true })
+  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((user) => res.send(user))
     .catch((err) => sendError(err, res));
 };
