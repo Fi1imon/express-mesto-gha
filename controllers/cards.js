@@ -21,7 +21,9 @@ module.exports.createCard = (req, res) => {
     return;
   }
 
-  Card.create({ name, link, owner, likes: [], createdAt: Date.now() })
+  Card.create({
+    name, link, owner, likes: [], createdAt: Date.now(),
+  })
     .then((card) => res.status(200).send({ card }))
     .catch((err) => res.status(500).send({ message: `Произошла ошибка: ${err.message}` }));
 };
