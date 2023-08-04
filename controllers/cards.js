@@ -46,7 +46,7 @@ module.exports.deleteCard = (req, res) => {
         return;
       }
 
-      Card.findOneAndDelete({ id: req.params.cardId })
+      Card.findOneAndDelete({ _id: req.params.cardId })
         .then(() => res.send({ message: 'Карточка успешно удалена' }))
         .catch((err) => res.status(500).send({ message: `Произошла ошибка: ${err.message}` }));
     })
