@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
+    "start": "app.js",
     "lint": "npx eslint"
   },
   "author": "Alexandr",
