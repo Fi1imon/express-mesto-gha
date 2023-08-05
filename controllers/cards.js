@@ -9,13 +9,13 @@ const sendError = (err, res) => {
     return res.status(400).send({ message: 'Переданы некорректные данные для создания карточки.' });
   }
 
-  return res.status(500).send({ message: `Произошла ошибка: ${err.message}, ${err.name}` });
+  return res.status(500).send({ message: 'На сервере произошла ошибка' });
 };
 
 module.exports.getCards = (req, res) => {
   Card.find()
     .then((cards) => res.status(200).send({ cards }))
-    .catch((err) => res.status(500).send({ message: `Произошла ошибка: ${err.message}` }));
+    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
 };
 
 module.exports.createCard = (req, res) => {
@@ -48,7 +48,7 @@ module.exports.deleteCard = (req, res) => {
 
       Card.findOneAndDelete({ _id: req.params.cardId })
         .then(() => res.send({ message: 'Карточка успешно удалена' }))
-        .catch((err) => res.status(500).send({ message: `Произошла ошибка: ${err.message}` }));
+        .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
     })
     .catch((err) => sendError(err, res));
 };

@@ -9,13 +9,13 @@ const sendError = (err, res) => {
     return res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
   }
 
-  return res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
+  return res.status(500).send({ message: 'На сервере произошла ошибка' });
 };
 
 module.exports.getUsers = (req, res) => {
   User.find()
     .then((users) => res.status(200).send({ users }))
-    .catch((err) => res.status(500).send({ message: `Произошла ошибка: ${err.message}` }));
+    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
 };
 
 module.exports.getUser = (req, res) => {
