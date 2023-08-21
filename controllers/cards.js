@@ -46,6 +46,11 @@ module.exports.deleteCard = (req, res) => {
         return;
       }
 
+      if (req.user._id !== card.owner._id) {
+        res.status(403).send({ message: 'У вас нет прав для удаления этой карточки.' });
+        return;
+      }
+
       Card.findOneAndDelete({ _id: req.params.cardId })
         .then(() => res.send({ message: 'Карточка успешно удалена' }))
         .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
