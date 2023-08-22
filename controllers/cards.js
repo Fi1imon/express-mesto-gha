@@ -1,5 +1,7 @@
 const Card = require('../models/card');
 
+const { NotFoundError, BadRequest, Unauthorized } = require('../middlewares/errors');
+
 const sendError = (err, res) => {
   if (err.name === 'CastError') {
     return res.status(404).send({ message: 'Карточка с указанным id не найдена.' });
@@ -33,10 +35,9 @@ module.exports.createCard = (req, res) => {
     .catch((err) => sendError(err, res));
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   if (req.params.cardId === 'text') {
-    res.status(400).send({ message: 'Переданы некорректные данные для создания карточки.' });
-    return;
+    throw new BadRequest('Переданы некорректные данные для создания карточки.');
   }
 
   Card.findOne({ _id: req.params.cardId })

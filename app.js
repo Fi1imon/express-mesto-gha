@@ -16,6 +16,8 @@ const { login, createUser } = require('./controllers/users');
 
 const auth = require('./middlewares/auth');
 
+const errorHandler = require('./middlewares/errors');
+
 app.use(bodyParser.json());
 
 app.post('/signin', login);
@@ -31,6 +33,16 @@ app.use(auth);
 app.use('/users', require('./routes/user'));
 
 app.use('/cards', require('./routes/card'));
+
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
+    });
+});
 
 app.use((req, res, next) => {
   next(res.status(404).send({ message: 'Страница не найдена.' }));
