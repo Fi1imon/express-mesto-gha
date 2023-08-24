@@ -3,6 +3,7 @@ const Card = require('../models/card');
 const { NotFoundError } = require('../errors/NotFoundError');
 
 const sendCardError = (err, res) => {
+  console.log(err.message);
   if (err.name === 'CastError') {
     res.status(404).send({ message: 'Карточка с указанным id не найдена.' });
     return;
@@ -33,18 +34,14 @@ module.exports.createCard = (req, res) => {
     .catch((err) => sendCardError(err, res));
 };
 
-module.exports.deleteCard = (req, res) => {
-  if (req.params.cardId === 'text') {
-    res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
-  }
-
+module.exports.deleteCard = (req, res, next) => {
   Card.findOne({ _id: req.params.cardId })
     .then((card) => {
       if (card === null) {
         throw new NotFoundError({ message: 'Карточка с указанным id не найдена.' });
       }
 
-      if (req.user._id !== card.owner._id) {
+      if (req.user._id.toString() !== card.owner._id.toString()) {
         res.status(403).send({ message: 'У вас нет прав для удаления этой карточки.' });
         return;
       }
@@ -53,16 +50,11 @@ module.exports.deleteCard = (req, res) => {
         .then(() => res.send({ message: 'Карточка успешно удалена' }))
         .catch((err) => sendCardError(err, res));
     })
-    .catch((err) => sendCardError(err, res));
+    .catch(next);
 };
 
-module.exports.setLikeToCard = (req, res) => {
+module.exports.setLikeToCard = (req, res, next) => {
   if (!req.user._id) {
-    res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
-    return;
-  }
-
-  if (req.params.cardId === 'text') {
     res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
     return;
   }
@@ -79,16 +71,11 @@ module.exports.setLikeToCard = (req, res) => {
 
       res.status(200).send(card);
     })
-    .catch((err) => sendCardError(err, res));
+    .catch(next);
 };
 
-module.exports.removeLikeFromCard = (req, res) => {
+module.exports.removeLikeFromCard = (req, res, next) => {
   if (!req.user._id) {
-    res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
-    return;
-  }
-
-  if (req.params.cardId === 'text') {
     res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
     return;
   }
@@ -105,5 +92,5 @@ module.exports.removeLikeFromCard = (req, res) => {
 
       res.status(200).send(card);
     })
-    .catch((err) => sendCardError(err, res));
+    .catch(next);
 };
