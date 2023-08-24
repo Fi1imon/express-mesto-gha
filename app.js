@@ -42,7 +42,7 @@ app.use(rateLimit({
 }));
 
 app.post('/signup', celebrate({ body: signup }), createUser);
-app.post('/signin', celebrate({ body: signin }) , login);
+app.post('/signin', celebrate({ body: signin }), login);
 
 app.use(auth);
 
