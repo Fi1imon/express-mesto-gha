@@ -14,7 +14,7 @@ const rateLimit = require('express-rate-limit');
 
 const cookieParser = require('cookie-parser');
 
-const { errors } = require('celebrate');
+const { celebrate, errors } = require('celebrate');
 
 const { login, createUser } = require('./controllers/users');
 
@@ -41,8 +41,8 @@ app.use(rateLimit({
   legacyHeaders: false,
 }));
 
-app.post('/signup', signup, createUser);
-app.post('/signin', signin, login);
+app.post('/signup', celebrate({ body: signup }), createUser);
+app.post('/signin', celebrate({ body: signin }) , login);
 
 app.use(auth);
 
