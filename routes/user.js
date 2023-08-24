@@ -5,6 +5,7 @@ const { celebrate, Joi } = require('celebrate');
 const {
   getUsers, updateUser, updateAvatar, getCurrentUser, getUser,
 } = require('../controllers/users');
+const { link } = require('../utils/regularExpressions');
 
 router.get('/', getUsers);
 
@@ -12,7 +13,7 @@ router.get('/me', getCurrentUser);
 
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().regex(/[0-z]{20,30}/),
+    userId: Joi.string().length(24).hex().required(),
   }),
 }), getUser);
 
@@ -25,7 +26,7 @@ router.patch('/me', celebrate({
 
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().regex(/https?:\/\/w?w?w?\.?[0-z-]{1,63}\.?[0-z-]{1,63}\.[A-z]{1,10}[0-z\S]{1,100}/),
+    avatar: Joi.string().required().regex(link),
   }),
 }), updateAvatar);
 

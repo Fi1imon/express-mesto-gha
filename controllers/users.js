@@ -8,29 +8,13 @@ const { JWT_SECRET } = process.env;
 
 const User = require('../models/user');
 
-const sendError = (err, res) => {
-  console.log(err.name);
-
-  if (err.name === 'CastError') {
-    res.status(404).send({ message: 'Пользователь с указанным id не найден.' });
-    return;
-  }
-
-  if (err.name === 'ValidationError') {
-    res.status(400).send({ message: 'Переданы некорректные данные для создания пользователя.' });
-    return;
-  }
-
-  res.status(500).send({ message: 'На сервере произошла ошибка' });
-};
-
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find()
     .then((users) => res.status(200).send({ users }))
-    .catch((err) => sendError(err, res));
+    .catch(next);
 };
 
-module.exports.getCurrentUser = (req, res) => {
+module.exports.getCurrentUser = (req, res, next) => {
   User.findOne({ _id: req.user._id })
     .then((user) => {
       if (user === null) {
@@ -38,7 +22,7 @@ module.exports.getCurrentUser = (req, res) => {
       }
       res.send(user);
     })
-    .catch((err) => sendError(err, res));
+    .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
@@ -49,7 +33,13 @@ module.exports.getUser = (req, res, next) => {
       }
       res.send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new NotFoundError({ message: 'Пользователь с указанным id не найден.' }));
+        return;
+      }
+      next(err);
+    });
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -69,25 +59,34 @@ module.exports.createUser = (req, res, next) => {
         avatar: user.avatar,
       });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        const e = new Error('Пользователь с таким email уже существует.');
+        e.statusCode = 409;
+
+        next(e);
+        return;
+      }
+      next(err);
+    });
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const userId = req.user._id;
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((user) => res.send(user))
-    .catch((err) => sendError(err, res));
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const userId = req.user._id;
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((user) => res.send(user))
-    .catch((err) => sendError(err, res));
+    .catch(next);
 };
 
 module.exports.login = (req, res, next) => {

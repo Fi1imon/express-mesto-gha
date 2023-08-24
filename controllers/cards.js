@@ -2,28 +2,13 @@ const Card = require('../models/card');
 
 const { NotFoundError } = require('../errors/NotFoundError');
 
-const sendCardError = (err, res) => {
-  console.log(err.message);
-  if (err.name === 'CastError') {
-    res.status(404).send({ message: 'Карточка с указанным id не найдена.' });
-    return;
-  }
-
-  if (err.name === 'ValidationError') {
-    res.status(400).send({ message: 'Переданы некорректные данные для создания карточки.' });
-    return;
-  }
-
-  res.status(500).send({ message: 'На сервере произошла ошибка' });
-};
-
 module.exports.getCards = (req, res, next) => {
   Card.find()
     .then((cards) => res.status(200).send({ cards }))
     .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const owner = req.user._id;
   const { name, link } = req.body;
 
@@ -31,7 +16,13 @@ module.exports.createCard = (req, res) => {
     name, link, owner, likes: [], createdAt: Date.now(),
   })
     .then((card) => res.status(200).send({ card }))
-    .catch((err) => sendCardError(err, res));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные для создания карточки.' });
+        return;
+      }
+      next(err);
+    });
 };
 
 module.exports.deleteCard = (req, res, next) => {
@@ -48,7 +39,13 @@ module.exports.deleteCard = (req, res, next) => {
 
       Card.findOneAndDelete({ _id: req.params.cardId })
         .then(() => res.send({ message: 'Карточка успешно удалена' }))
-        .catch((err) => sendCardError(err, res));
+        .catch((err) => {
+          if (err.name === 'CastError') {
+            next(new NotFoundError({ message: 'Карточка с указанным id не найдена' }));
+            return;
+          }
+          next(err);
+        });
     })
     .catch(next);
 };
