@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 
 const { NotFoundError } = require('../errors/NotFoundError');
+const { BadRequest } = require('../errors/BadRequest');
 
 module.exports.getCards = (req, res, next) => {
   Card.find()
@@ -18,7 +19,7 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => res.status(200).send({ card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные для создания карточки.' });
+        next(new BadRequest({ message: 'Переданы некорректные данные для создания карточки.' }));
         return;
       }
       next(err);
@@ -33,7 +34,10 @@ module.exports.deleteCard = (req, res, next) => {
       }
 
       if (req.user._id.toString() !== card.owner._id.toString()) {
-        res.status(403).send({ message: 'У вас нет прав для удаления этой карточки.' });
+        const e = new Error('У вас нет прав для удаления этой карточки.');
+        e.statusCode = 403;
+
+        next(e);
         return;
       }
 
@@ -51,11 +55,6 @@ module.exports.deleteCard = (req, res, next) => {
 };
 
 module.exports.setLikeToCard = (req, res, next) => {
-  if (!req.user._id) {
-    res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
-    return;
-  }
-
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -72,11 +71,6 @@ module.exports.setLikeToCard = (req, res, next) => {
 };
 
 module.exports.removeLikeFromCard = (req, res, next) => {
-  if (!req.user._id) {
-    res.status(400).send({ message: 'Переданы некорректные данные для постановки/снятии лайка.' });
-    return;
-  }
-
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
