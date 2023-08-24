@@ -2,12 +2,14 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const { NotFoundError } = require('../errors/NotFoundError');
+const { Unauthorized } = require('../errors/Unauthorized');
 
 const { JWT_SECRET } = process.env;
 
 const User = require('../models/user');
 
 const sendError = (err, res) => {
+  console.log(err.message);
   if (err.name === 'CastError') {
     res.status(404).send({ message: 'Пользователь с указанным id не найден.' });
     return;
@@ -47,7 +49,7 @@ module.exports.createUser = (req, res) => {
     .then((hash) => User.create({
       email, password: hash, about, name, avatar,
     }))
-    .then((user) => res.send(user))
+    .then((user) => res.send({ email: user.email }))
     .catch((err) => sendError(err, res));
 };
 
@@ -69,11 +71,15 @@ module.exports.updateAvatar = (req, res) => {
     .catch((err) => sendError(err, res));
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   User.findUserByCredentials({ email, password })
     .then((user) => {
+      if (!user) {
+        throw new Unauthorized({ message: 'Проверьте корректность отправленных данных.' });
+      }
+
       const token = jwt.sign(
         { _id: user._id },
         JWT_SECRET,
@@ -85,7 +91,7 @@ module.exports.login = (req, res) => {
         httpOnly: true,
       });
 
-      res.send('good');
+      res.send('Успешно');
     })
-    .catch((err) => sendError(err, res));
+    .catch(next);
 };
