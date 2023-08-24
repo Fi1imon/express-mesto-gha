@@ -9,7 +9,8 @@ const { JWT_SECRET } = process.env;
 const User = require('../models/user');
 
 const sendError = (err, res) => {
-  console.log(err.message);
+  console.log(err.name);
+
   if (err.name === 'CastError') {
     res.status(404).send({ message: 'Пользователь с указанным id не найден.' });
     return;
@@ -40,7 +41,7 @@ module.exports.getCurrentUser = (req, res) => {
     .catch((err) => sendError(err, res));
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     email, password, about, name, avatar,
   } = req.body;
@@ -49,8 +50,15 @@ module.exports.createUser = (req, res) => {
     .then((hash) => User.create({
       email, password: hash, about, name, avatar,
     }))
-    .then((user) => res.send({ email: user.email }))
-    .catch((err) => sendError(err, res));
+    .then((user) => {
+      res.send({
+        email: user.email,
+        about: user.about,
+        name: user.name,
+        avatar: user.avatar,
+      });
+    })
+    .catch(next);
 };
 
 module.exports.updateUser = (req, res) => {
@@ -91,7 +99,7 @@ module.exports.login = (req, res, next) => {
         httpOnly: true,
       });
 
-      res.send('Успешно');
+      res.send({ message: 'Успешно' });
     })
     .catch(next);
 };
