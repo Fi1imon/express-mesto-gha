@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 
 const { NotFoundError } = require('../errors/NotFoundError');
 const { Unauthorized } = require('../errors/Unauthorized');
+const { Conflict } = require('../errors/Conflict');
 
 const { JWT_SECRET } = process.env;
 
@@ -61,10 +62,7 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        const e = new Error('Пользователь с таким email уже существует.');
-        e.statusCode = 409;
-
-        next(e);
+        next(new Conflict({ message: 'Пользователь с таким email уже существует.' }));
         return;
       }
       next(err);

@@ -2,6 +2,7 @@ const Card = require('../models/card');
 
 const { NotFoundError } = require('../errors/NotFoundError');
 const { BadRequest } = require('../errors/BadRequest');
+const { Forbidden } = require('../errors/Forbidden');
 
 module.exports.getCards = (req, res, next) => {
   Card.find()
@@ -34,10 +35,7 @@ module.exports.deleteCard = (req, res, next) => {
       }
 
       if (req.user._id.toString() !== card.owner._id.toString()) {
-        const e = new Error('У вас нет прав для удаления этой карточки.');
-        e.statusCode = 403;
-
-        next(e);
+        next(new Forbidden({ message: 'У вас нет прав для удаления этой карточки.' }));
         return;
       }
 
