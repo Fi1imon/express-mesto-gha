@@ -41,7 +41,7 @@ module.exports.getCurrentUser = (req, res) => {
     .catch((err) => sendError(err, res));
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   User.findOne({ _id: req.params.userId })
     .then((user) => {
       if (user === null) {
@@ -49,7 +49,7 @@ module.exports.getUser = (req, res) => {
       }
       res.send(user);
     })
-    .catch((err) => sendError(err, res));
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
