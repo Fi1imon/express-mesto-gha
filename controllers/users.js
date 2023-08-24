@@ -1,34 +1,37 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
+const { NotFoundError } = require('../errors/NotFoundError');
+
 const { JWT_SECRET } = process.env;
 
 const User = require('../models/user');
 
 const sendError = (err, res) => {
   if (err.name === 'CastError') {
-    return res.status(404).send({ message: 'Пользователь не найден.' });
+    res.status(404).send({ message: 'Пользователь с указанным id не найден.' });
+    return;
   }
 
   if (err.name === 'ValidationError') {
-    return res.status(400).send({ message: `Переданы некорректные данные при создании пользователя: ${err.message}` });
+    res.status(400).send({ message: 'Переданы некорректные данные для создания пользователя.' });
+    return;
   }
 
-  return res.status(500).send({ message: `На сервере произошла ошибка: ${err.message}` });
+  res.status(500).send({ message: 'На сервере произошла ошибка' });
 };
 
 module.exports.getUsers = (req, res) => {
   User.find()
     .then((users) => res.status(200).send({ users }))
-    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+    .catch((err) => sendError(err, res));
 };
 
 module.exports.getCurrentUser = (req, res) => {
   User.findOne({ _id: req.user._id })
     .then((user) => {
       if (user === null) {
-        res.status(404).send({ message: 'Пользователь не найден.' });
-        return;
+        throw new NotFoundError({ message: 'Пользователь не найден.' });
       }
       res.send(user);
     })
@@ -52,12 +55,6 @@ module.exports.updateUser = (req, res) => {
   const userId = req.user._id;
   const { name, about } = req.body;
 
-  // Проверяем наличие хотя бы одного нужного поля в запросе
-  if (!about && !name) {
-    res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
-    return;
-  }
-
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((user) => res.send(user))
     .catch((err) => sendError(err, res));
@@ -66,12 +63,6 @@ module.exports.updateUser = (req, res) => {
 module.exports.updateAvatar = (req, res) => {
   const userId = req.user._id;
   const { avatar } = req.body;
-
-  // Проверяем наличие нужного поля в запросе
-  if (!avatar) {
-    res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара.' });
-    return;
-  }
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((user) => res.send(user))
