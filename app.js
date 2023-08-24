@@ -1,14 +1,14 @@
+require('dotenv').config();
+
+const { PORT = 3001, DB_CONN = 'mongodb://localhost:27017/mesto' } = process.env;
+
 const express = require('express');
 
 const mongoose = require('mongoose');
 
-require('dotenv').config();
-
 const bodyParser = require('body-parser');
 
-const app = express();
-
-const { PORT = 3000, DB_CONN = 'mongodb://localhost:27017/mesto' } = process.env;
+const cookieParser = require('cookie-parser');
 
 const { celebrate, Joi, errors } = require('celebrate');
 
@@ -16,7 +16,11 @@ const { login, createUser } = require('./controllers/users');
 
 const auth = require('./middlewares/auth');
 
+const app = express();
+
 app.use(bodyParser.json());
+
+app.use(cookieParser());
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -34,11 +38,7 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
-app.use(celebrate({
-  headers: Joi.object().keys({
-    authorization: Joi.string().regex(/Bearer \S+/),
-  }).unknown(true),
-}), auth);
+app.use(auth);
 
 app.use('/users', require('./routes/user'));
 
