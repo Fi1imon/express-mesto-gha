@@ -26,7 +26,7 @@ const { errorHandler } = require('./middlewares/errorHandler');
 
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
-const { checkCors } = require('./middlewares/cors');
+// const { checkCors } = require('./middlewares/cors');
 
 const auth = require('./middlewares/auth');
 
@@ -47,7 +47,7 @@ app.use(rateLimit({
 
 app.use(requestLogger);
 
-app.use(checkCors);
+// app.use(checkCors);
 
 app.post('/signup', celebrate({ body: signup }), createUser);
 app.post('/signin', celebrate({ body: signin }), login);
