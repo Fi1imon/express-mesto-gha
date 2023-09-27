@@ -1,9 +1,9 @@
-// const allowedCors = [
-//  'https://mesto.fi1imon.nomoredomainsicu.ru',
-// ];
+const allowedCors = [
+  'https://mesto.fi1imon.nomoredomainsicu.ru',
+];
 
 const checkCors = (req, res, next) => {
-//  const { origin } = req.headers;
+  const { origin } = req.headers;
   const requestHeaders = req.headers['access-control-request-headers'];
   const { method } = req;
 
@@ -17,11 +17,9 @@ const checkCors = (req, res, next) => {
     return;
   }
 
-  res.header('Access-Control-Allow-Origin', '*');
-
-  // if (allowedCors.includes(origin)) {
-  //   res.header('Access-Control-Allow-Origin', origin);
-  // }
+  if (allowedCors.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
 
   next();
 };
