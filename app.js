@@ -24,7 +24,7 @@ const { NotFoundError } = require('./errors/NotFoundError');
 
 const { errorHandler } = require('./middlewares/errorHandler');
 
-// const { requestLogger, errorLogger } = require('./middlewares/logger');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 // const { checkCors } = require('./middlewares/cors');
 
@@ -45,7 +45,7 @@ app.use(rateLimit({
   legacyHeaders: false,
 }));
 
-// app.use(requestLogger);
+app.use(requestLogger);
 
 // app.use(checkCors);
 
@@ -58,7 +58,7 @@ app.use('/users', require('./routes/user'));
 
 app.use('/cards', require('./routes/card'));
 
-// app.use(errorLogger);
+app.use(errorLogger);
 
 app.use(errors());
 
