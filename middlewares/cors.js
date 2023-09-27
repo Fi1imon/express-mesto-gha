@@ -13,14 +13,15 @@ const checkCors = (req, res, next) => {
     res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
     res.header('Access-Control-Allow-Headers', requestHeaders);
 
-    return res.end();
+    res.end();
+    return;
   }
 
   if (allowedCors.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
   }
 
-  return next();
+  next();
 };
 
 module.exports = { checkCors };
