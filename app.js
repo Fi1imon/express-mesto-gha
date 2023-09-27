@@ -32,6 +32,8 @@ const auth = require('./middlewares/auth');
 
 const app = express();
 
+app.use(checkCors);
+
 app.use(bodyParser.json());
 
 app.use(cookieParser());
@@ -46,8 +48,6 @@ app.use(rateLimit({
 }));
 
 app.use(requestLogger);
-
-app.use(checkCors);
 
 app.post('/signup', celebrate({ body: signup }), createUser);
 app.post('/signin', celebrate({ body: signin }), login);
