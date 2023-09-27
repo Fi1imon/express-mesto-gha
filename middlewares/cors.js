@@ -1,5 +1,5 @@
 const allowedCors = [
-  'https://mesto.fi1imon.nomoredomainsicu.ru/',
+  'https://mesto.fi1imon.nomoredomainsicu.ru',
   'https://cors-test.codehappy.dev/',
 ];
 
