@@ -1,6 +1,7 @@
 const allowedCors = [
   'https://mesto.fi1imon.nomoredomainsicu.ru',
-  'https://cors-test.codehappy.dev/',
+  'https://mesto.fi1imon.nomoredomainsicu.ru/',
+  'http://localhost:3000/',
 ];
 
 const checkCors = (req, res, next) => {
