@@ -32,9 +32,9 @@ const auth = require('./middlewares/auth');
 
 const app = express();
 
-app.use(checkCors);
-
 app.use(bodyParser.json());
+
+app.use(checkCors);
 
 app.use(cookieParser());
 
