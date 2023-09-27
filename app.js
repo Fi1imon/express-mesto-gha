@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { PORT = 3001, DB_CONN = 'mongodb://localhost:27017/mesto' } = process.env;
+const { PORT = 3000, DB_CONN = 'mongodb://localhost:27017/mesto' } = process.env;
 
 const express = require('express');
 
@@ -24,9 +24,9 @@ const { NotFoundError } = require('./errors/NotFoundError');
 
 const { errorHandler } = require('./middlewares/errorHandler');
 
-const { errorLogger } = require('./middlewares/logger');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
-// const { checkCors } = require('./middlewares/cors');
+const { checkCors } = require('./middlewares/cors');
 
 const auth = require('./middlewares/auth');
 
@@ -45,9 +45,9 @@ app.use(rateLimit({
   legacyHeaders: false,
 }));
 
-// app.use(requestLogger);
+app.use(requestLogger);
 
-// app.use(checkCors);
+app.use(checkCors);
 
 app.post('/signup', celebrate({ body: signup }), createUser);
 app.post('/signin', celebrate({ body: signin }), login);
