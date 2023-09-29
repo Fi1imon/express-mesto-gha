@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { PORT = 3000, DB_CONN = 'mongodb://localhost:27017/mesto' } = process.env;
+const { PORT, DB_CONN } = process.env;
 
 const express = require('express');
 
