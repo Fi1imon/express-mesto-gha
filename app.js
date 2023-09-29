@@ -49,16 +49,16 @@ app.use(rateLimit({
 
 app.use(requestLogger);
 
-app.post('/signup', celebrate({ body: signup }), createUser);
-app.post('/signin', celebrate({ body: signin }), login);
-
-app.use(auth);
-
 app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('Сервер сейчас упадёт');
   }, 0);
 });
+
+app.post('/signup', celebrate({ body: signup }), createUser);
+app.post('/signin', celebrate({ body: signin }), login);
+
+app.use(auth);
 
 app.use('/users', require('./routes/user'));
 
