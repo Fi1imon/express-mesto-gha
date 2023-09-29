@@ -102,7 +102,11 @@ module.exports.login = (req, res, next) => {
         { expiresIn: '7d' },
       );
 
-      res.set('Set-Cookie', `jwt=${token}`);
+      res.cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: false,
+      });
 
       res.send({ message: 'Успешно' });
     })
